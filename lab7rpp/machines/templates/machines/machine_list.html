@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Мониторинг светофоров</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-family: Arial, sans-serif;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .status-ok {
+            color: green;
+        }
+        .status-warning {
+            color: orange;
+        }
+        .status-danger {
+            color: red;
+        }
+        .action-links a {
+            margin-right: 10px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Мониторинг светофоров</h1>
+    <a href="{% url 'machine-create' %}" style="display: inline-block; margin-bottom: 20px;">Добавить новый светофор</a>
+
+    <table>
+        <thead>
+            <tr>
+                <th>№ Светофора</th>
+                <th>Модель</th>
+                <th>Производитель</th>
+                <th>Кол-во в пробке</th>
+                <th>Кол-во проехало</th>
+                <th>Дата показаний</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in machines_with_readings %}
+            <tr>
+                <td>{{ item.machine.machine_number }}</td>
+                <td>{{ item.machine.model }}</td>
+                <td>{{ item.machine.manufacturer }}</td>
+                <td>
+                    {% if item.last_reading %}
+                        {{ item.last_reading.vibration_frequency }}
+                    {% else %}
+                        Нет данных
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.last_reading %}
+                        {{ item.last_reading.power_consumption }}
+                    {% else %}
+                        Нет данных
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if item.last_reading %}
+                        {{ item.last_reading.timestamp|date:"d.m.Y H:i" }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td class="{% if item.last_reading and item.last_reading.vibration_frequency > 100 %}status-danger{% elif item.last_reading %}status-ok{% endif %}">
+                    {% if item.last_reading %}
+                        {% if item.last_reading.vibration_frequency > 100 %}
+                            Пробка!
+                        {% else %}
+                            Норма
+                        {% endif %}
+                    {% else %}
+                        Нет данных
+                    {% endif %}
+                </td>
+                <td class="action-links">
+                    <a href="{% url 'machine-detail' item.machine.pk %}">Просмотр</a>
+                    <a href="{% url 'machine-update' item.machine.pk %}">Изменить</a>
+                    <a href="{% url 'machine-delete' item.machine.pk %}" style="color: red;">Удалить</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

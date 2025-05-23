@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ machine }}</title>
+</head>
+<body>
+    <h1>{{ machine }}</h1>
+    <p>Производитель: {{ machine.manufacturer }}</p>
+    <p>Модель: {{ machine.model }}</p>
+    <p>Дата установки: {{ machine.installation_date }}</p>
+    <p>Последнее ТО: {{ machine.last_maintenance|default:"Не указано" }}</p>
+
+    <h2>Технические характеристики</h2>
+    {% if machine.machinespecification %}
+    <p>Макс. вибрация: {{ machine.machinespecification.max_vibration }}</p>
+    <p>Макс. мощность: {{ machine.machinespecification.max_power }}</p>
+    <p>Макс. температура: {{ machine.machinespecification.max_temperature }}</p>
+    {% else %}
+    <p>Характеристики не указаны</p>
+    {% endif %}
+
+    <a href="{% url 'machine-list' %}">Назад к списку</a>
+</body>
+</html>

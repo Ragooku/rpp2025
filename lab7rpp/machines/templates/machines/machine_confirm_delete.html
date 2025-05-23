@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Удалить светофор</title>
+</head>
+<body>
+    <h1>Удалить светофор</h1>
+    <p>Вы уверены, что хотите удалить "{{ object }}"?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Подтвердить удаление</button>
+    </form>
+    <a href="{% url 'machine-list' %}">Отмена</a>
+</body>
+</html>
