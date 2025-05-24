@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">
+                    <i class="bi bi-pc-display-horizontal me-2"></i>
+                    {{ machine.machine_number }} - {{ machine.model }}
+                </h2>
+                <div class="btn-group">
+                    {% if user.profile.role.name == 'Начальник' %}
+                        <a href="{% url 'machine-update' machine.pk %}" class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i> Редактировать
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'machine-list' %}" class="btn btn-sm btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Назад
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4 class="border-bottom pb-2">Основная информация</h4>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless">
+                            <tbody>
+                                <tr>
+                                    <th width="40%">Производитель:</th>
+                                    <td>{{ machine.manufacturer }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Модель:</th>
+                                    <td>{{ machine.model }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Дата установки:</th>
+                                    <td>{{ machine.installation_date|date:"d.m.Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Последнее ТО:</th>
+                                    <td>{{ machine.last_maintenance|date:"d.m.Y"|default:"Не указано" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Статус:</th>
+                                    <td>
+                                        <span class="badge bg-success">Активен</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h4 class="border-bottom pb-2">Технические характеристики</h4>
+                    {% if machine.machinespecification %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless">
+                            <tbody>
+                                <tr>
+                                    <th width="40%">Макс. частота переключения:</th>
+                                    <td>{{ machine.machinespecification.max_vibration }} Гц</td>
+                                </tr>
+                                <tr>
+                                    <th>Макс. мощность лампы:</th>
+                                    <td>{{ machine.machinespecification.max_power }} кВт</td>
+                                </tr>
+                                <tr>
+                                    <th>Макс. температура лампы:</th>
+                                    <td>{{ machine.machinespecification.max_temperature }} °C</td>
+                                </tr>
+                                <tr>
+                                    <th>Реком. мощность лампы:</th>
+                                    <td>{{ machine.machinespecification.recommended_power }} кВт</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Технические характеристики не указаны
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="border-bottom pb-2">Последние показания</h4>
+                    {% if user.profile.role.name in 'Оператор,Начальник' %}
+                        <a href="{% url 'reading-add' machine.pk %}" class="btn btn-sm btn-success">
+                            <i class="bi bi-plus-circle"></i> Добавить показания
+                        </a>
+                    {% endif %}
+                </div>
+
+                {% if machine.machinereading_set.all %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Вибрация частота переключения</th>
+                                <th>Мощность лапсы (Вт)</th>
+                                <th>Температура (°C)</th>
+                                <th>Статус</th>
+                                {% if user.profile.role.name == 'Начальник' %}
+                                <th>Действия</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reading in machine.machinereading_set.all|slice:":5" %}
+                            <tr>
+                                <td>{{ reading.timestamp|date:"d.m.Y H:i" }}</td>
+                                <td>{{ reading.vibration_frequency }}</td>
+                                <td>{{ reading.power_consumption }}</td>
+                                <td>{{ reading.temperature }}</td>
+                                <td>
+                                    {% if reading.vibration_frequency > 15 %}
+                                        <span class="badge bg-danger">Пробка!</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Норма</span>
+                                    {% endif %}
+                                </td>
+                                {% if user.profile.role.name == 'Начальник' %}
+                                <td>
+                                    <a href="{% url 'reading-delete' reading.pk %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <a href="#" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-list-ul"></i> Показать все показания
+                    </a>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Нет данных о показаниях
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if user.profile.role.name == 'Начальник' %}
+        <div class="card-footer bg-light">
+            <div class="d-flex justify-content-between">
+                <small class="text-muted">
+                    Создано: {{ machine.created_at|date:"d.m.Y H:i"|default:"Неизвестно" }}
+                </small>
+                <div class="btn-group">
+                    <a href="{% url 'machine-update' machine.pk %}" class="btn btn-sm btn-outline-warning">
+                        <i class="bi bi-pencil"></i> Изменить
+                    </a>
+                    <a href="{% url 'machine-delete' machine.pk %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i> Удалить
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .card {
+        max-width: 1200px;
+    }
+    th {
+        font-weight: 500;
+        color: #6c757d;
+    }
+    .table-borderless tbody tr td,
+    .table-borderless tbody tr th {
+        border: none;
+        padding: 0.3rem 0;
+    }
+    .alert {
+        margin-bottom: 0;
+    }
+    .badge {
+        font-size: 0.85em;
+    }
+</style>
+{% endblock %}

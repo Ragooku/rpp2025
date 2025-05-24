@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card border-danger mx-auto" style="max-width: 600px;">
+        <div class="card-header bg-danger text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="h4 mb-0">
+                    <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                    Подтверждение удаления
+                </h2>
+                <span class="badge bg-light text-dark">
+                    <i class="bi bi-person-fill-gear"></i> {{ user.profile.role.name }}
+                </span>
+            </div>
+        </div>
+
+        <div class="card-body">
+            {% if not user.profile.role.name == 'Начальник' %}
+                <div class="alert alert-danger d-flex align-items-center">
+                    <i class="bi bi-shield-lock-fill fs-3 me-3"></i>
+                    <div>
+                        <h4 class="alert-heading">Доступ запрещен!</h4>
+                        <p class="mb-0">Только начальник может удалять светофоры.</p>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-danger" role="alert">
+                    <h4 class="alert-heading">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Внимание!
+                    </h4>
+                    <p>Вы собираетесь безвозвратно удалить светофор и все связанные данные:</p>
+                    <ul class="mb-2">
+                        <li>Все показания работы светофора</li>
+                        <li>Технические характеристики</li>
+                        <li>Историю обслуживания</li>
+                    </ul>
+                    <hr>
+                    <p class="mb-0">
+                        <strong>Светофор:</strong> {{ object.machine_number }} - {{ object.model }}<br>
+                        <strong>Производитель:</strong> {{ object.manufacturer }}<br>
+                        <strong>Дата установки:</strong> {{ object.installation_date|date:"d.m.Y" }}
+                    </p>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'machine-detail' object.pk %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left-circle me-1"></i> Вернуться
+                    </a>
+                    <form method="post" class="mb-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash3-fill me-1"></i> Подтвердить удаление
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="card-footer bg-light">
+            <small class="text-muted d-flex align-items-center">
+                <i class="bi bi-clock-history me-2"></i>
+                Последнее изменение: {{ object.updated_at|date:"d.m.Y H:i"|default:"неизвестно" }}
+            </small>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        box-shadow: 0 0.5rem 1rem rgba(220, 53, 69, 0.15);
+        border-width: 2px;
+    }
+    .alert {
+        border-left: 4px solid #dc3545;
+    }
+    .badge {
+        font-size: 0.8em;
+        padding: 0.35em 0.65em;
+    }
+    ul {
+        padding-left: 1.5rem;
+    }
+</style>
+{% endblock %}

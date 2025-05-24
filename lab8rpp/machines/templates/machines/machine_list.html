@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Мониторинг светофоров</h1>
+    
+    <div class="d-flex justify-content-between mb-4">
+        {% if user.is_authenticated %}
+            {% if user.profile.role.name == 'Начальник' %}
+                <a href="{% url 'machine-create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Добавить новый светофор
+                </a>
+            {% else %}
+                <div></div> <!-- Пустой div для выравнивания -->
+            {% endif %}
+
+            <div>
+                <span class="me-3">Вы вошли как: <strong>{{ user.username }}</strong>
+                {% if user.profile.role %}
+                    ({{ user.profile.role.name }})
+                {% endif %}
+                </span>
+                <a href="{% url 'logout' %}" class="btn btn-outline-danger">
+                    <i class="bi bi-box-arrow-right"></i> Выйти
+                </a>
+            </div>
+        {% else %}
+            <div>
+                <a href="{% url 'login' %}" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-box-arrow-in-right"></i> Войти
+                </a>
+                <a href="{% url 'register' %}" class="btn btn-primary">
+                    <i class="bi bi-person-plus"></i> Регистрация
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>№ Светофора</th>
+                            <th>Модель</th>
+                            <th>Производитель</th>
+                            <th>Проехало</th>
+                            <th>Стоят</th>
+                            <th>Дата</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in machines_with_readings %}
+                        <tr>
+                            <td>{{ item.machine.machine_number }}</td>
+                            <td>{{ item.machine.model }}</td>
+                            <td>{{ item.machine.manufacturer }}</td>
+                            <td>
+                                {% if item.last_reading %}
+                                    {{ item.last_reading.vibration_frequency }}
+                                {% else %}
+                                    <span class="text-muted">Нет данных</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.last_reading %}
+                                    {{ item.last_reading.power_consumption }}
+                                {% else %}
+                                    <span class="text-muted">Нет данных</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if item.last_reading %}
+                                    {{ item.last_reading.timestamp|date:"d.m.Y H:i" }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.last_reading %}
+                                    {% if item.last_reading.vibration_frequency > 100 %}
+                                        <span class="badge bg-danger">Пробка!</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Норма</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">Нет данных</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'machine-detail' item.machine.pk %}" class="btn btn-sm btn-outline-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if user.is_authenticated %}
+                                        {% if user.profile.role.name == 'Начальник' %}
+                                            <a href="{% url 'machine-update' item.machine.pk %}" class="btn btn-sm btn-outline-warning">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'machine-delete' item.machine.pk %}" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        {% endif %}
+                                        {% if user.profile.role.name == 'Оператор' or user.profile.role.name == 'Начальник' %}
+                                            <a href="{% url 'reading-add' item.machine.pk %}" class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-plus-circle"></i> Показания
+                                            </a>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    .badge {
+        font-size: 0.85em;
+        font-weight: 500;
+    }
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+    }
+    .btn-outline-success {
+        margin-left: 5px;
+    }
+</style>
+{% endblock %}
