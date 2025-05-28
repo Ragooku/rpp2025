@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">
+                <i class="bi bi-{% if object %}gear{% else %}plus-circle{% endif %} me-2"></i>
+                {% if object %}Редактирование светофора{% else %}Добавление нового светофора{% endif %}
+            </h2>
+        </div>
+        <div class="card-body">
+            {% if not user.profile.role.name == 'Начальник' %}
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-octagon-fill"></i>
+                    У вас недостаточно прав для выполнения этого действия. Обратитесь к начальнику.
+                </div>
+            {% else %}
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    {{ form|crispy }}
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'machine-list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left-circle me-1"></i> Назад к списку
+                        </a>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle me-1"></i> Сохранить
+                            </button>
+                            {% if object %}
+                            <a href="{% url 'machine-detail' object.pk %}" class="btn btn-info">
+                                <i class="bi bi-eye me-1"></i> Просмотр
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    .btn-group .btn {
+        margin-left: 0.5rem;
+    }
+    .alert {
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}
